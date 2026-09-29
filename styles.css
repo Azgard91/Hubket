@@ -161,6 +161,21 @@ td select {
   padding: 4px 6px;
 }
 
+.aging-critico-rojo {
+  color: #b42318;
+  font-weight: 700;
+}
+
+.aging-critico-naranja {
+  color: #c2410c;
+  font-weight: 700;
+}
+
+.aging-critico-amarillo {
+  color: #8a6d00;
+  font-weight: 700;
+}
+
 .vacio {
   color: var(--suave);
   text-align: center;

@@ -2,6 +2,7 @@
 const ESTADOS = ['Abierto', 'En progreso', 'Resuelto', 'Cerrado'];
 const PRIORIDADES = ['Baja', 'Media', 'Alta', 'Crítica'];
 const RESPONSABLES = ['Juan', 'Matías', 'Dalmiro'];
+const TIPOS_TICKET = ['Incidente', 'Requerimiento', 'Problema', 'Cambio'];
 const CLAVE = 'incidentes';
 
 // Elementos de la página
@@ -11,6 +12,7 @@ const vacio = document.getElementById('vacio');
 const resumen = document.getElementById('resumen');
 const filtros = document.getElementById('filtros');
 const filtroEstado = document.getElementById('filtro-estado');
+const filtroTipo = document.getElementById('filtro-tipo');
 const filtroPrioridad = document.getElementById('filtro-prioridad');
 const filtroResponsable = document.getElementById('filtro-responsable');
 
@@ -54,10 +56,25 @@ function tiempo(inc) {
   return `Abierto hace ${duracion(Date.now() - inc.creado)}`;
 }
 
+function claseAging(inc) {
+  if (inc.prioridad !== 'Crítica') return '';
+
+  const milisegundos = inc.resuelto
+    ? inc.resuelto - inc.creado
+    : Date.now() - inc.creado;
+  const minutos = milisegundos / 60000;
+
+  if (minutos >= 60) return 'aging-critico-rojo';
+  if (minutos >= 30) return 'aging-critico-naranja';
+  if (minutos >= 15) return 'aging-critico-amarillo';
+  return '';
+}
+
 function fila(inc) {
   return `
     <tr>
       <td>#${inc.id}</td>
+      <td>${escapar(inc.tipo || 'Incidente')}</td>
       <td>
         <strong>${escapar(inc.titulo)}</strong>
         <small>${escapar(inc.descripcion)}</small>
@@ -78,7 +95,7 @@ function fila(inc) {
         </select>
       </td>
       <td>${fecha(inc.creado)}</td>
-      <td>${tiempo(inc)}</td>
+      <td class="${claseAging(inc)}">${tiempo(inc)}</td>
     </tr>`;
 }
 
@@ -99,6 +116,7 @@ function mostrarResumen() {
 function mostrar() {
   const visibles = incidentes
     .filter(i => !filtroEstado.value || i.estado === filtroEstado.value)
+    .filter(i => !filtroTipo.value || (i.tipo || 'Incidente') === filtroTipo.value)
     .filter(i => !filtroPrioridad.value || i.prioridad === filtroPrioridad.value)
     .filter(i => !filtroResponsable.value || i.responsable === filtroResponsable.value)
     .reverse(); // los más nuevos primero
@@ -118,6 +136,7 @@ form.addEventListener('submit', e => {
     id: incidentes.reduce((max, i) => Math.max(max, i.id), 0) + 1,
     titulo,
     descripcion: form.descripcion.value.trim(),
+    tipo: form.tipo.value,
     prioridad: form.prioridad.value,
     responsable: form.responsable.value,
     estado: 'Abierto',
@@ -152,6 +171,7 @@ filtros.addEventListener('change', mostrar);
 form.prioridad.innerHTML = opciones(PRIORIDADES, 'Media');
 form.responsable.innerHTML = opciones(RESPONSABLES);
 filtroEstado.innerHTML = '<option value="">Todos</option>' + opciones(ESTADOS);
+filtroTipo.innerHTML = '<option value="">Todos</option>' + opciones(TIPOS_TICKET);
 filtroPrioridad.innerHTML = '<option value="">Todas</option>' + opciones(PRIORIDADES);
 filtroResponsable.innerHTML = '<option value="">Todos</option>' + opciones(RESPONSABLES);
 
